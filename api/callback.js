@@ -24,23 +24,25 @@ export default async function handler(req, res) {
 		if (token.access_token) {
 			const safe = JSON.stringify(token).replace(/</g, "\\u003c"); // prevent XSS
 
-			// Send a minimal HTML page that stores token in localStorage and redirects
 			res.setHeader("Content-Type", "text/html");
 			res.send(`
 				<!DOCTYPE html>
 				<html>
-				<head><title>Auth Successful</title></head>
+				<head><title>Token Received</title></head>
 				<body>
-					<h2>✅ Auth successful</h2>
-					<p>Redirecting to send token to Obsidian...</p>
+					<h2>✅ Token received</h2>
+					<p>Sending token to parent window...</p>
 					<script>
-						try {
-							const token = ${safe};
-							localStorage.setItem("gdrive-token", JSON.stringify(token));
-							window.location.href = "/post-token";
-						} catch (err) {
-							document.body.innerHTML = "<h2>❌ Failed to store token</h2><pre>" + err.message + "</pre>";
-						}
+						(function() {
+							try {
+								const token = ${safe};
+								window.parent?.postMessage(JSON.stringify(token), "*");
+								document.body.innerHTML += "<p>✅ Sent! You can return to Obsidian.</p>";
+							} catch (err) {
+								document.body.innerHTML = "<h2>❌ Failed to send token</h2><pre>" + err.message + "</pre>";
+								window.parent?.postMessage(JSON.stringify({ error: "postMessage error", detail: err.message }), "*");
+							}
+						})();
 					</script>
 				</body>
 				</html>
