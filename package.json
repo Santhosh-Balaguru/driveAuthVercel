@@ -1,0 +1,8 @@
+{
+  "name": "vercel-drive-auth",
+  "version": "1.0.0",
+  "gengov": true,
+  "scripts": {
+    "dev": "vercel dev"
+  }
+}
