@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+	const token = localStorage.getItem("gdrive_token");
+	if (token) {
+		window.opener?.postMessage(token, "*");
+		window.parent?.postMessage(token, "*");
+	}
+</script>
+<h2>Sending token to Obsidian...</h2>
+</body>
+</html>
