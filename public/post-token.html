@@ -1,21 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Google Drive Auth - Send Token</title>
+	<title>Post Token</title>
 </head>
 <body>
-  <h2>✅ Token received. Sending to Obsidian...</h2>
-  <p>You can now return to the Obsidian app.</p>
-
-<script>
-  const token = localStorage.getItem("gdrive_token");
-  if (token) {
-    parent.postMessage(JSON.stringify({ access_token: token }), "*");
-  } else {
-    parent.postMessage(JSON.stringify({ error: "No token found" }), "*");
-  }
-</script>
-
+	<h2>✅ Token received. Sending to Obsidian...</h2>
+	<script>
+		try {
+			const raw = localStorage.getItem("gdrive-token");
+			if (!raw) {
+				document.body.innerHTML = "❌ No token found in localStorage.";
+				window.opener?.postMessage(JSON.stringify({ error: "No token found" }), "*");
+			} else {
+				const token = JSON.parse(raw);
+				window.opener?.postMessage(JSON.stringify(token), "*");
+				document.body.innerHTML += "<p>You can now return to the Obsidian app.</p>";
+			}
+		} catch (err) {
+			window.opener?.postMessage(JSON.stringify({ error: "post-token error", detail: err.message }), "*");
+		}
+	</script>
 </body>
 </html>
