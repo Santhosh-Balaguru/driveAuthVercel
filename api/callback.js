@@ -22,38 +22,33 @@ export default async function handler(req, res) {
 		const token = await tokenRes.json();
 
 		if (token.access_token) {
-			const safe = JSON.stringify(token).replace(/</g, "\\u003c"); // avoid XSS
+			const safe = JSON.stringify(token).replace(/</g, "\\u003c");
 
 			res.setHeader("Content-Type", "text/html");
 			res.send(`
 				<!DOCTYPE html>
 				<html>
-				<head><title>Token Sent</title></head>
+				<head><title>Auth Successful</title></head>
 				<body>
-					<h2>✅ Token received</h2>
-					<p>Sending token to Obsidian...</p>
+					<h2>✅ Auth successful</h2>
 					<script>
-						(function() {
-							try {
-								const token = ${safe};
-								window.parent?.postMessage(JSON.stringify(token), "*");
-								document.body.innerHTML += "<p>✅ Token sent! Return to the Obsidian app.</p>";
-							} catch (err) {
-								console.error("[callback] Error:", err);
-								window.parent?.postMessage(JSON.stringify({ error: "postMessage error", detail: err.message }), "*");
-								document.body.innerHTML = "<h2>❌ Failed to send token</h2><p>" + err.message + "</p>";
-							}
-						})();
+						const token = ${safe};
+						localStorage.setItem("gdrive-token", JSON.stringify(token));
+						if (window.parent) {
+							window.parent.postMessage(JSON.stringify(token), "*");
+							console.log("[callback] Sent token to parent");
+						}
 					</script>
+					<p>You can now return to the Obsidian app.</p>
 				</body>
 				</html>
 			`);
 		} else {
-			console.error("[OAuth] Token exchange failed:", token);
+			console.error("[OAuth] Failed to retrieve token:", token);
 			res.status(400).send("❌ Failed to retrieve access token");
 		}
 	} catch (err) {
-		console.error("[OAuth] Server error:", err);
-		res.status(500).send("❌ Internal server error");
+		console.error("[OAuth] Error during token exchange:", err);
+		res.status(500).send("❌ Internal Server Error");
 	}
 }
