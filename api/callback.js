@@ -22,25 +22,26 @@ export default async function handler(req, res) {
 		const token = await tokenRes.json();
 
 		if (token.access_token) {
-			const safe = JSON.stringify(token).replace(/</g, "\\u003c"); // prevent XSS
+			const safe = JSON.stringify(token).replace(/</g, "\\u003c"); // avoid XSS
 
 			res.setHeader("Content-Type", "text/html");
 			res.send(`
 				<!DOCTYPE html>
 				<html>
-				<head><title>Token Received</title></head>
+				<head><title>Token Sent</title></head>
 				<body>
 					<h2>✅ Token received</h2>
-					<p>Sending token to parent window...</p>
+					<p>Sending token to Obsidian...</p>
 					<script>
 						(function() {
 							try {
 								const token = ${safe};
 								window.parent?.postMessage(JSON.stringify(token), "*");
-								document.body.innerHTML += "<p>✅ Sent! You can return to Obsidian.</p>";
+								document.body.innerHTML += "<p>✅ Token sent! Return to the Obsidian app.</p>";
 							} catch (err) {
-								document.body.innerHTML = "<h2>❌ Failed to send token</h2><pre>" + err.message + "</pre>";
+								console.error("[callback] Error:", err);
 								window.parent?.postMessage(JSON.stringify({ error: "postMessage error", detail: err.message }), "*");
+								document.body.innerHTML = "<h2>❌ Failed to send token</h2><p>" + err.message + "</p>";
 							}
 						})();
 					</script>
@@ -48,11 +49,11 @@ export default async function handler(req, res) {
 				</html>
 			`);
 		} else {
-			console.error("[OAuth] Failed to retrieve token:", token);
+			console.error("[OAuth] Token exchange failed:", token);
 			res.status(400).send("❌ Failed to retrieve access token");
 		}
 	} catch (err) {
-		console.error("[OAuth] Error during token exchange:", err);
-		res.status(500).send("❌ Internal Server Error");
+		console.error("[OAuth] Server error:", err);
+		res.status(500).send("❌ Internal server error");
 	}
 }
