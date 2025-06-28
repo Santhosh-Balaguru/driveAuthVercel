@@ -15,7 +15,7 @@
 				if (!raw) {
 					const message = { error: "No token found in localStorage" };
 					document.body.innerHTML = `<h2>❌ No token found</h2><p>Ensure token was stored correctly before redirect.</p>`;
-					window.opener?.postMessage(JSON.stringify(message), "*");
+					window.parent?.postMessage(JSON.stringify(message), "*");
 					console.warn("[post-token] Token missing in localStorage");
 					return;
 				}
@@ -24,17 +24,17 @@
 
 				if (!tokenData.access_token) {
 					document.body.innerHTML = "<h2>❌ Invalid token structure</h2>";
-					window.opener?.postMessage(JSON.stringify({ error: "Invalid token structure" }), "*");
+					window.parent?.postMessage(JSON.stringify({ error: "Invalid token structure" }), "*");
 					console.error("[post-token] Token missing access_token field");
 					return;
 				}
 
-				console.log("[post-token] Sending token to opener", tokenData);
-				window.opener?.postMessage(JSON.stringify(tokenData), "*");
+				console.log("[post-token] Sending token to parent", tokenData);
+				window.parent?.postMessage(JSON.stringify(tokenData), "*");
 				document.body.innerHTML += "<p>You can now return to the Obsidian app.</p>";
 			} catch (err) {
 				console.error("[post-token] Error:", err);
-				window.opener?.postMessage(JSON.stringify({
+				window.parent?.postMessage(JSON.stringify({
 					error: "Exception in post-token",
 					detail: err.message
 				}), "*");
