@@ -1,13 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Google Drive Auth - Send Token</title>
+</head>
 <body>
-<script>
-	const token = localStorage.getItem("gdrive_token");
-	if (token) {
-		window.opener?.postMessage(token, "*");
-		window.parent?.postMessage(token, "*");
-	}
-</script>
-<h2>Sending token to Obsidian...</h2>
+  <h2>✅ Token received. Sending to Obsidian...</h2>
+  <p>You can now return to the Obsidian app.</p>
+
+  <script>
+    const tokenRaw = localStorage.getItem("gdrive_token");
+    if (tokenRaw) {
+      // Send to parent window (for iframe) or opener (for popup)
+      window.opener?.postMessage(tokenRaw, "*");
+      window.parent?.postMessage(tokenRaw, "*");
+    } else {
+      document.body.innerHTML = "<h2>❌ No token found in localStorage.</h2>";
+    }
+  </script>
 </body>
 </html>
