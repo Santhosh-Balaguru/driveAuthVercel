@@ -8,15 +8,14 @@
   <h2>✅ Token received. Sending to Obsidian...</h2>
   <p>You can now return to the Obsidian app.</p>
 
-  <script>
-    const tokenRaw = localStorage.getItem("gdrive_token");
-    if (tokenRaw) {
-      // Send to parent window (for iframe) or opener (for popup)
-      window.opener?.postMessage(tokenRaw, "*");
-      window.parent?.postMessage(tokenRaw, "*");
-    } else {
-      document.body.innerHTML = "<h2>❌ No token found in localStorage.</h2>";
-    }
-  </script>
+<script>
+  const token = localStorage.getItem("gdrive_token");
+  if (token) {
+    parent.postMessage(JSON.stringify({ access_token: token }), "*");
+  } else {
+    parent.postMessage(JSON.stringify({ error: "No token found" }), "*");
+  }
+</script>
+
 </body>
 </html>
